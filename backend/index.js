@@ -218,13 +218,23 @@ res.status(401).send({errors:"please authenticate using a valid token"})
 
 // adding products in cart
 app.post('/addtocart', fetchUser, async(req,res)=>{
-    // console.log(req.body,req.user);
+    console.log("added",req.body.itemId)
+
     let userData = await Users.findOne({_id:req.user.id});
     userData.cartData[req.body.itemId] += 1;
     await Users.findOneAndUpdate({_id:req.user.id},{cartData:userData.cartData})
 res.send("Added")
 })
 
+//creating endpoint to remove product from the cart
+app.post('/removefromcart',fetchUser,async(req,res)=>{
+    console.log("removed",req.body.itemId)
+    let userData = await Users.findOne({_id:req.user.id});
+    if(userData.cartData[req.body.itemId]>0)
+    userData.cartData[req.body.itemId] -= 1;
+    await Users.findOneAndUpdate({_id:req.user.id},{cartData:userData.cartData})
+res.send("Removed")
+})
 // new collection data 
 app.get('/newcollections', async(req,res)=>{
     let products = await Product.find({});
@@ -240,6 +250,14 @@ app.get('/popularinwomen', async(req, res)=>{
     let popular_in_women = products.slice(0,4);
     console.log("Popular in women fetched")
     res.send(popular_in_women)
+})
+
+//creating endpoint to get cart data
+
+app.post('/getcart',fetchUser,async (req,res)=>{
+console.log("GetCart");
+let userData = await Users.findOne({_id:req.user.id});
+res.json(userData.cartData);
 })
 
 app.listen(port,(error)=>{
